@@ -1,0 +1,79 @@
+version: "3"
+
+services:
+  radarr:
+    image: lscr.io/linuxserver/radarr
+    container_name: radarr
+    environment:
+      PUID: 1000
+      PGID: 100
+      TZ: ${TZ}
+    volumes:
+      - ${VOL_CONFIG}/radarr:/config
+      - ${VOL_CONFIG}/downloads:/downloads
+      - ${VOL_MEDIA}/movies:/movies
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr
+    container_name: sonarr
+    environment:
+      PUID: 1000
+      PGID: 100
+      TZ: ${TZ}
+    volumes:
+      - ${VOL_CONFIG}/sonarr:/config
+      - ${VOL_CONFIG}/downloads:/downloads
+      - ${VOL_MEDIA}/series:/tv
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+
+  readarr:
+    image: lscr.io/linuxserver/readarr:develop
+    container_name: readarr
+    environment:
+      PUID: 1000
+      PGID: 100
+      TZ: ${TZ}
+    volumes:
+      - ${VOL_CONFIG}/readarr:/config
+      - ${VOL_CONFIG}/downloads:/downloads
+      - ${VOL_MEDIA}/books:/books
+    ports:
+      - 8787:8787
+    restart: unless-stopped
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:develop
+    container_name: prowlarr
+    environment:
+      PUID: 1000
+      PGID: 100
+      TZ: ${TZ}
+    volumes:
+      - ${VOL_CONFIG}/prowlarr:/config
+    ports:
+      - 9696:9696
+    restart: unless-stopped
+
+  transmission:
+    image: lscr.io/linuxserver/transmission
+    container_name: transmission
+    environment:
+      PUID: 1000
+      PGID: 100
+      TZ: ${TZ}
+      USER: ${USER}
+      PASS: ${PASSWORD}
+    volumes:
+      - ${VOL_CONFIG}/transmission:/config
+      - ${VOL_CONFIG}/downloads:/downloads
+      - ${VOL_CONFIG}/torrents:/watch
+    ports:
+      - 9091:9091
+      - 51413:51413
+      - 51413:51413/udp
+    restart: unless-stopped
