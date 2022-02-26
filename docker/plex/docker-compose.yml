@@ -1,0 +1,16 @@
+version: "3"
+
+services:
+  plex:
+    image: lscr.io/linuxserver/plex
+    container_name: plex
+    network_mode: host
+    environment:
+      PUID: 1000
+      PGID: 100
+      VERSION: docker
+    volumes:
+      - ${VOL_CONFIG}/plex:/config
+      - ${VOL_MEDIA}/series:/tv
+      - ${VOL_MEDIA}/movies:/movies
+    restart: unless-stopped
