@@ -1,0 +1,17 @@
+version: "3"
+services:
+  papermerge:
+    image: lscr.io/linuxserver/papermerge
+    container_name: papermerge
+    environment:
+      PUID: 1000
+      PGID: 100
+      TZ: ${TZ}
+      OCRLANG: spa
+      DOCKER_MODS: linuxserver/mods:papermerge-multilangocr
+    volumes:
+      - ${VOL_CONFIG}/papermerge:/config
+      - ${VOL_DATA}:/data
+    ports:
+      - 8800:8000
+    restart: unless-stopped
