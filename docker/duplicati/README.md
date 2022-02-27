@@ -15,7 +15,7 @@ Title: duplicati
 Description: Free backup software to store encrypted backups
 
 Icon URL:
-https://raw.githubusercontent.com/Servarr/Wiki/master/assets/servarr/servarr_dark_1024.png
+https://github.com/linuxserver/docker-templates/raw/master/linuxserver.io/img/duplicati-icon.png
 <img src="https://github.com/linuxserver/docker-templates/raw/master/linuxserver.io/img/duplicati-icon.png" width="30" height="30" alt="duplicati">
 
 Platform: Linux
