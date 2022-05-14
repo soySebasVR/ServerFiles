@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  minecraft:
+    image: itzg/minecraft-server:latest
+    container_name: minecraft
+    ports:
+      - 25565:25565
+    environment:
+      EULA: "TRUE"
+      MEMORY: 2G
+      DIFFICULTY: hard
+      MAX_PLAYERS: 10
+      ALLOW_NETHER: true
+      ONLINE_MODE: FALSE
+      SERVER_NAME: "Minecraft Server"
+      TZ: America/Lima
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+    volumes:
+      - ${VOL_CONFIG}/minecraft:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 2G
