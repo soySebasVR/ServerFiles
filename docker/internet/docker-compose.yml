@@ -46,7 +46,7 @@ services:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - ${VOL_CONFIG}/certs:/etc/nginx/certs
       - ${VOL_CONFIG}/vhost.d:/etc/nginx/vhost.d
-      - nextcloud:/var/www/html:ro
+      - ${VOL_CONFIG}/nextcloud/data:/var/www/html:ro
       - ${VOL_CONFIG}/conf.d/asset_inmutable.conf:/etc/nginx/conf.d/asset_inmutable.conf
 
   plex:
@@ -77,15 +77,15 @@ services:
     expose:
       - 9000
     volumes:
-      - nextcloud:/var/www/html
+      - ${VOL_CONFIG}/nextcloud/data:/var/www/html
     environment:
       POSTGRES_HOST: nextcloud-db
       POSTGRES_USER: nextcloud
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: nextcloud
       REDIS_HOST: nextcloud-redis
-      NEXTCLOUD_TRUSTED_DOMAINS: nc.${DOMAIN} omv.local
-      VIRTUAL_HOST: nc.${DOMAIN},omv.local
+      NEXTCLOUD_TRUSTED_DOMAINS: nc.${DOMAIN} homeserver.local
+      VIRTUAL_HOST: nc.${DOMAIN},homeserver.local
       VIRTUAL_PORT: 9000
     depends_on:
       - nextcloud-db
@@ -95,7 +95,7 @@ services:
     container_name: nextcloud-db
     restart: always
     volumes:
-      - db:/var/lib/postgresql/data
+      - ${VOL_CONFIG}/postgres/data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: nextcloud
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -109,12 +109,8 @@ services:
     container_name: nextcloud-cron
     restart: always
     volumes:
-      - nextcloud:/var/www/html
+      - ${VOL_CONFIG}/nextcloud/data:/var/www/html
     entrypoint: /cron.sh
     depends_on:
       - nextcloud-db
       - nextcloud-redis
-
-volumes:
-  db:
-  nextcloud:
