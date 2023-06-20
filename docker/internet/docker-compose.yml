@@ -63,6 +63,8 @@ services:
       VERSION: docker
       VIRTUAL_HOST: plex.${DOMAIN}
       VIRTUAL_PORT: 32400
+    devices:
+      - "/dev/dri:/dev/dri" # intel
     volumes:
       - ${VOL_CONFIG}/plex:/config
       - ${VOL_MEDIA}/series:/tv
@@ -84,8 +86,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: nextcloud
       REDIS_HOST: nextcloud-redis
-      NEXTCLOUD_TRUSTED_DOMAINS: nc.${DOMAIN} homeserver.local
-      VIRTUAL_HOST: nc.${DOMAIN},homeserver.local
+      NEXTCLOUD_TRUSTED_DOMAINS: nc.${DOMAIN}
+      VIRTUAL_HOST: nc.${DOMAIN}
       VIRTUAL_PORT: 9000
     depends_on:
       - nextcloud-db
@@ -105,7 +107,7 @@ services:
     container_name: nextcloud-redis
     restart: always
   nextcloud-cron:
-    image: nextcloud:fpm-alpine
+    image: nextcloud:fpm
     container_name: nextcloud-cron
     restart: always
     volumes:
