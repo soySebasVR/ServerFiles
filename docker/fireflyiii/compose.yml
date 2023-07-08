@@ -1,0 +1,116 @@
+version: '3.3'
+
+services:
+  fireflyiii:
+    image: fireflyiii/core:latest
+    container_name: fireflyiii
+    restart: unless-stopped
+    volumes:
+      - ${VOL_CONFIG}/fireflyiii:/var/www/html/storage/upload
+    ports:
+      - 8088:8080
+    networks:
+      - internet
+    environment:
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - DB_DATABASE=firefly
+      - DB_USERNAME=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - APP_ENV=local
+      - APP_DEBUG=false
+      - SITE_OWNER=mail@example.com
+      - APP_KEY=d98fyk34jbno897gf34yh09d8pd9385n
+      - DEFAULT_LANGUAGE=es_ES
+      - DEFAULT_LOCALE=equal
+      - TZ=America/Lima
+      - TRUSTED_PROXIES=
+      - LOG_CHANNEL=stack
+      - PAPERTRAIL_HOST=
+      - PAPERTRAIL_PORT=
+      - APP_LOG_LEVEL=notice
+      - AUDIT_LOG_LEVEL=info
+      - PGSQL_SSL_MODE=prefer
+      - PGSQL_SSL_ROOT_CERT=null
+      - PGSQL_SSL_CERT=null
+      - PGSQL_SSL_KEY=null
+      - PGSQL_SSL_CRL_FILE=null
+      - PGSQL_SCHEMA=public
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - REDIS_SCHEME=tcp
+      - REDIS_HOST=redis-db
+      - REDIS_PORT=6379
+      - REDIS_USERNAME=
+      - REDIS_PASSWORD=
+      - REDIS_DB="0"
+      - REDIS_CACHE_DB="1"
+      - COOKIE_PATH="/"
+      - COOKIE_DOMAIN=
+      - COOKIE_SECURE=false
+      - COOKIE_SAMESITE=lax
+      - MAIL_MAILER=log
+      - MAIL_HOST=null
+      - MAIL_PORT=2525
+      - MAIL_FROM=changeme@example.com
+      - MAIL_USERNAME=null
+      - MAIL_PASSWORD=null
+      - MAIL_ENCRYPTION=null
+      - MAIL_SENDMAIL_COMMAND=
+      - MAILGUN_DOMAIN=
+      - MAILGUN_SECRET=
+      - MAILGUN_ENDPOINT=api.mailgun.net
+      - MANDRILL_SECRET=
+      - SPARKPOST_SECRET=
+      - SEND_ERROR_MESSAGE=true
+      - SEND_REPORT_JOURNALS=true
+      - ENABLE_EXTERNAL_MAP=false
+      - ENABLE_EXTERNAL_RATES=true
+      - MAP_DEFAULT_LAT=51.983333
+      - MAP_DEFAULT_LONG=5.916667
+      - MAP_DEFAULT_ZOOM=6
+      - AUTHENTICATION_GUARD=web
+      - AUTHENTICATION_GUARD_HEADER=REMOTE_USER
+      - AUTHENTICATION_GUARD_EMAIL=
+      - PASSPORT_PRIVATE_KEY=
+      - PASSPORT_PUBLIC_KEY=
+      - CUSTOM_LOGOUT_URL=
+      - DISABLE_FRAME_HEADER=false
+      - DISABLE_CSP_HEADER=false
+      - TRACKER_SITE_ID=
+      - TRACKER_URL=
+      - ALLOW_WEBHOOKS=false
+      - STATIC_CRON_TOKEN=ddff873n3hd7v7l4uh43978yb0d9fgy2
+      - DKR_BUILD_LOCALE=false
+      - DKR_CHECK_SQLITE=true
+      - DKR_RUN_MIGRATION=true
+      - DKR_RUN_UPGRADE=true
+      - DKR_RUN_VERIFY=true
+      - DKR_RUN_REPORT=true
+      - DKR_RUN_PASSPORT_INSTALL=true
+      - APP_NAME=FireflyIII
+      - BROADCAST_DRIVER=log
+      - QUEUE_DRIVER=sync
+      - CACHE_PREFIX=firefly
+      - PUSHER_KEY=
+      - IPINFO_TOKEN=
+      - PUSHER_SECRET=
+      - PUSHER_ID=
+      - DEMO_USERNAME=
+      - DEMO_PASSWORD=
+      - IS_HEROKU=false
+      - FIREFLY_III_LAYOUT=v1
+      - APP_URL=http://localhost
+  cron:
+    #
+    # To make this work, set STATIC_CRON_TOKEN in your .env file or as an environment variable and replace REPLACEME below
+    # The STATIC_CRON_TOKEN must be *exactly* 32 characters long
+    #
+    image: alpine
+    command: sh -c "echo \"0 3 * * * wget -qO- http://app:8080/api/v1/cron/ddff873n3hd7v7l4uh43978yb0d9fgy2\" | crontab - && crond -f -L /dev/stdout"
+
+networks:
+  internet:
+    name: internet_default
+    external: true
