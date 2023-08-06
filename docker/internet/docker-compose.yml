@@ -5,8 +5,6 @@ services:
     image: postgres:15-alpine
     container_name: postgres-db
     restart: unless-stopped
-    # ports:
-    #   - 5432:5432
     volumes:
       - ${VOL_CONFIG}/postgres/data:/var/lib/postgresql/data
   adminer:
@@ -38,6 +36,7 @@ services:
   autossh-443:
     image: jnovack/autossh
     container_name: autossh-443
+    restart: unless-stopped
     environment:
       - SSH_REMOTE_USER=root
       - SSH_REMOTE_HOST=${REMOTE_HOST}
@@ -45,15 +44,38 @@ services:
       - SSH_TUNNEL_PORT=443
       - SSH_TARGET_HOST=nginx-proxy
       - SSH_TARGET_PORT=443
-    restart: always
     volumes:
       - ${VOL_CONFIG}/autossh/autossh_id_rsa:/id_rsa
     dns:
       - 8.8.8.8
       - 1.1.1.1
+  # autossh-10101:
+  #   image: jnovack/autossh
+  #   container_name: autossh-10101
+  #   environment:
+  #     - SSH_REMOTE_USER=root
+  #     - SSH_REMOTE_HOST=${REMOTE_HOST}
+  #     - SSH_REMOTE_PORT=22
+  #     - SSH_TUNNEL_PORT=10101
+  #     - SSH_TARGET_HOST=socat-udp-10101
+  #     - SSH_TARGET_PORT=10101
+  #   restart: always
+  #   volumes:
+  #     - ${VOL_CONFIG}/autossh/autossh_id_rsa:/id_rsa
+  #   dns:
+  #     - 8.8.8.8
+  #     - 1.1.1.1
+  # socat-udp-10101:
+  #   restart: always
+  #   container_name: socat-udp-10101
+  #   image: alpine/socat
+  #   command: tcp4-listen:10101,reuseaddr,fork UDP:jvb:10000
+  #   expose:
+  #     - 10101
   nginx-proxy:
     image: jwilder/nginx-proxy
     container_name: nginx-proxy
+    restart: unless-stopped
     ports:
       - 80:80
       - 443:443
@@ -118,8 +140,8 @@ services:
       POSTGRES_PASSWORD:
       POSTGRES_DB: nextcloud
       REDIS_HOST: redis-db
-      NEXTCLOUD_TRUSTED_DOMAINS: nc.${DOMAIN}
-      VIRTUAL_HOST: nc.${DOMAIN}
+      NEXTCLOUD_TRUSTED_DOMAINS: nc.${DOMAIN} homeserver.local nextcloud.local.com
+      VIRTUAL_HOST: nc.${DOMAIN},homeserver.local,nextcloud.local.com
       VIRTUAL_PORT: 9000
     depends_on:
       - postgres-db
