@@ -37,7 +37,7 @@ services:
     environment:
       PUID: 1000
       PGID: 100
-      TZ: ${TZ}
+      TZ:
     volumes:
       - ${VOL_CONFIG}/readarr:/config
       - ${VOL_CONFIG}/downloads:/downloads
@@ -52,7 +52,7 @@ services:
     environment:
       PUID: 1000
       PGID: 100
-      TZ: ${TZ}
+      TZ:
     volumes:
       - ${VOL_CONFIG}/prowlarr:/config
     ports:
@@ -65,7 +65,7 @@ services:
     environment:
       PUID: 1000
       PGID: 100
-      TZ: ${TZ}
+      TZ:
       USER: ${USER}
       PASS: ${PASSWORD}
     volumes:

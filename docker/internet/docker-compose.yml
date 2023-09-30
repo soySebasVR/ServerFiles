@@ -17,74 +17,26 @@ services:
     container_name: redis-db
     restart: unless-stopped
 
-  autossh-80:
-    image: jnovack/autossh
-    container_name: autossh-80
-    environment:
-      - SSH_REMOTE_USER=root
-      - SSH_REMOTE_HOST=${REMOTE_HOST}
-      - SSH_REMOTE_PORT=22
-      - SSH_TUNNEL_PORT=80
-      - SSH_TARGET_HOST=nginx-proxy
-      - SSH_TARGET_PORT=80
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
     restart: unless-stopped
     volumes:
-      - ${VOL_CONFIG}/autossh/autossh_id_rsa:/id_rsa
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
-  autossh-443:
-    image: jnovack/autossh
-    container_name: autossh-443
-    restart: unless-stopped
-    environment:
-      - SSH_REMOTE_USER=root
-      - SSH_REMOTE_HOST=${REMOTE_HOST}
-      - SSH_REMOTE_PORT=22
-      - SSH_TUNNEL_PORT=443
-      - SSH_TARGET_HOST=nginx-proxy
-      - SSH_TARGET_PORT=443
-    volumes:
-      - ${VOL_CONFIG}/autossh/autossh_id_rsa:/id_rsa
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
-  # autossh-10101:
-  #   image: jnovack/autossh
-  #   container_name: autossh-10101
-  #   environment:
-  #     - SSH_REMOTE_USER=root
-  #     - SSH_REMOTE_HOST=${REMOTE_HOST}
-  #     - SSH_REMOTE_PORT=22
-  #     - SSH_TUNNEL_PORT=10101
-  #     - SSH_TARGET_HOST=socat-udp-10101
-  #     - SSH_TARGET_PORT=10101
-  #   restart: always
-  #   volumes:
-  #     - ${VOL_CONFIG}/autossh/autossh_id_rsa:/id_rsa
-  #   dns:
-  #     - 8.8.8.8
-  #     - 1.1.1.1
-  # socat-udp-10101:
-  #   restart: always
-  #   container_name: socat-udp-10101
-  #   image: alpine/socat
-  #   command: tcp4-listen:10101,reuseaddr,fork UDP:jvb:10000
-  #   expose:
-  #     - 10101
+      - ${VOL_CONFIG}/certs:/certs
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TOKEN}
   nginx-proxy:
     image: jwilder/nginx-proxy
     container_name: nginx-proxy
     restart: unless-stopped
-    ports:
-      - 80:80
-      - 443:443
+    # ports:
+    #   - 80:80
+    #   - 443:443
     expose:
       - 80
-      - 443
+      # - 443
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ${VOL_CONFIG}/certs:/etc/nginx/certs
+      # - ${VOL_CONFIG}/certs:/etc/nginx/certs
       - ${VOL_CONFIG}/vhost.d:/etc/nginx/vhost.d
       - ${VOL_CONFIG}/nextcloud/data:/var/www/html:ro
       - ${VOL_CONFIG}/conf.d/asset_inmutable.conf:/etc/nginx/conf.d/asset_inmutable.conf
@@ -92,7 +44,6 @@ services:
   plex:
     image: lscr.io/linuxserver/plex
     container_name: plex
-    hostname: plex.${DOMAIN}
     ports:
       - 32400:32400
     expose:
@@ -110,38 +61,23 @@ services:
       - ${VOL_MEDIA}/series:/tv
       - ${VOL_MEDIA}/movies:/movies
     restart: unless-stopped
-  xteve:
-    image: dnsforge/xteve:latest
-    container_name: xteve
-    ports:
-      - 34400:34400
-    expose:
-      - 34400
-    environment:
-      PUID: 1000
-      PGID: 100
-      TZ: Lima/America
-    volumes:
-      - ${VOL_CONFIG}/xteve:/home/xteve/conf
-    restart: unless-stopped
 
   nextcloud:
     image: nextcloud:27-fpm
     container_name: nextcloud
     restart: unless-stopped
     hostname: nc.${DOMAIN}
-    expose:
-      - 9000
     volumes:
       - ${VOL_CONFIG}/nextcloud/data:/var/www/html
+      - ${VOL_MEDIA}:/external/media
     environment:
       POSTGRES_HOST: postgres-db
       POSTGRES_USER:
       POSTGRES_PASSWORD:
       POSTGRES_DB: nextcloud
       REDIS_HOST: redis-db
-      NEXTCLOUD_TRUSTED_DOMAINS: nc.${DOMAIN} homeserver.local nextcloud.local.com
-      VIRTUAL_HOST: nc.${DOMAIN},homeserver.local,nextcloud.local.com
+      NEXTCLOUD_TRUSTED_DOMAINS: nc.${DOMAIN} homeserver.local
+      VIRTUAL_HOST: nc.${DOMAIN},homeserver.local
       VIRTUAL_PORT: 9000
     depends_on:
       - postgres-db

@@ -9,11 +9,12 @@ services:
     environment:
       EULA: "TRUE"
       MEMORY: 2G
-      DIFFICULTY: hard
+      DIFFICULTY: normal
       MAX_PLAYERS: 10
       ALLOW_NETHER: true
-      ONLINE_MODE: FALSE
+      ONLINE_MODE: false
       SERVER_NAME: "Minecraft Server"
+      MOTD: "Bienvenidos uwu"
       TZ: America/Lima
     tty: true
     stdin_open: true
@@ -25,3 +26,23 @@ services:
         limits:
           cpus: '0.50'
           memory: 2G
+
+  minecraft-rcon:
+    image: itzg/rcon
+    container_name: minecraft-rcon
+    hostname: minecraft-rcon
+    restart: unless-stopped
+    depends_on:
+      - minecraft
+    ports:
+      - 4326:4326
+      - 4327:4327
+    environment:
+      RWA_ENV: TRUE
+      RWA_USERNAME: admin
+      RWA_PASSWORD: admin
+      RWA_ADMIN: TRUE
+      RWA_RCON_HOST: minecraft
+      RWA_RCON_PASSWORD: minecraft
+      # RWA_WEBSOCKET_URL: "ws://rcon.example.com/ws"
+      # RWA_WEBSOCKET_URL_SSL: "wss://rcon.example.com/ws"
