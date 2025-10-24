@@ -1,0 +1,35 @@
+services:
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:nightly
+    container_name: jellyfin
+    restart: unless-stopped
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ:
+      DOCKER_MODS: linuxserver/mods:jellyfin-rffmpeg
+      RFFMPEG_USER: ubuntu
+      RFFMPEG_HOST: "192.168.0.203"
+      FFMPEG_PATH: /usr/local/bin/ffmpeg
+      # JELLYFIN_PublishedServerUrl: http://192.168.0.202:8096
+      TMPDIR: /config/transcodes/
+    volumes:
+      - ${VOL_CONFIG}/jellyfin/config:/config
+      - ${VOL_MEDIA}/series:/media/series
+      - ${VOL_MEDIA}/movies:/media/movies
+    devices:
+      - "/dev/dri:/dev/dri"
+    ports:
+      - 8096:8096 # Http webUI
+      # - 8920:8920 # Https webUI
+      - 7359:7359/udp # discover Jellyfin
+      - 1900:1900/udp # discovery used by DNLA
+    group_add:
+      - "106"
+    networks:
+      - internet_access
+
+networks:
+  internet_access:
+    name: internet_access
+    external: true

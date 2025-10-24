@@ -1,0 +1,26 @@
+services:
+  ffmpeg-worker:
+    # image: ubuntu:24.04
+    build: .
+    container_name: ffmpeg-worker
+    # command: /bin/bash -c "apt-get update && apt-get install -y software-properties-common curl openssh-server && curl -L -o /jellyfin-ffmpeg7_7.1.2-2-noble_amd64.deb https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.2-2/jellyfin-ffmpeg7_7.1.2-2-noble_amd64.deb && add-apt-repository universe && apt install -y /jellyfin-ffmpeg7_7.1.2-2-noble_amd64.deb && ln /usr/share/jellyfin-ffmpeg/ffmpeg /usr/bin/ffmpeg && ln /usr/share/jellyfin-ffmpeg/ffprobe /usr/bin/ffprobe && ln /usr/share/jellyfin-ffmpeg/vainfo /usr/bin/vainfo && mkdir -p /home/ubuntu/.ssh && chown -R ubuntu:ubuntu /home/ubuntu/.ssh && chmod 700 /home/ubuntu/.ssh && touch /home/ubuntu/.ssh/authorized_keys && chown ubuntu:ubuntu /home/ubuntu/.ssh/authorized_keys && chmod 600 /home/ubuntu/.ssh/authorized_keys && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config && mkdir -p /var/run/sshd && chmod 0755 /var/run/sshd && echo \"Inciando ssh\" && /usr/sbin/sshd -D"
+    ports:
+      - "2222:22"
+    volumes:
+      - /media:/media
+      - /config:/config
+      - ./ssh/authorized_keys:/home/ubuntu/.ssh/authorized_keys
+    environment:
+      - PUID=1000
+      - PGID=1000
+    restart: unless-stopped
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+      - /dev/dri/card1:/dev/dri/card1
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, utility, compute, video]

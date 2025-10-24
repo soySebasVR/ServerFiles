@@ -1,0 +1,28 @@
+services:
+  minecraft:
+    container_name: minecraft-server
+    image: itzg/minecraft-server
+    tty: true
+    stdin_open: true
+    ports:
+      - "25565:25565"
+    environment:
+      EULA: "TRUE"
+      TYPE: "VANILLA"
+      VERSION: "1.21.5"
+      DIFFICULTY: "normal"
+      MEMORY: "1G"
+      MAX_PLAYERS: "8"
+      ONLINE_MODE: "true"
+      SERVER_NAME: "Mundo Pink"
+      ENABLE_RCON: "false"
+    restart: unless-stopped
+    volumes:
+      - ${VOL_CONFIG}/minecraft/data:/data
+    networks:
+      - internet_access
+
+networks:
+  internet_access:
+    name: internet_access
+    external: true
