@@ -9,13 +9,14 @@ services:
     environment:
       EULA: "TRUE"
       TYPE: "VANILLA"
-      VERSION: "1.21.5"
+      VERSION: "1.21.10"
       DIFFICULTY: "normal"
-      MEMORY: "1G"
+      MEMORY: "2G"
       MAX_PLAYERS: "8"
       ONLINE_MODE: "true"
       SERVER_NAME: "Mundo Pink"
       ENABLE_RCON: "false"
+      ENABLE_WHITELIST: "true"
     restart: unless-stopped
     volumes:
       - ${VOL_CONFIG}/minecraft/data:/data
