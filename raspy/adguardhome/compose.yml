@@ -1,0 +1,26 @@
+services:
+  adguardhome:
+    container_name: adguardhome
+    image: adguard/adguardhome:latest
+    network_mode: "host"
+    environment:
+      TZ:
+    volumes:
+      - ${VOL_CONFIG}/adguardhome/work:/opt/adguardhome/work
+      - ${VOL_CONFIG}/adguardhome/conf:/opt/adguardhome/conf
+    restart: unless-stopped
+  adguardhome-sync:
+    image: lscr.io/linuxserver/adguardhome-sync:latest
+    container_name: adguardhome-sync
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ:
+      CONFIGFILE: /config/adguardhome-sync.yaml
+    volumes:
+      - ${VOL_CONFIG}/adguardhome-sync/config:/config
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - 8080:8080
+    restart: unless-stopped

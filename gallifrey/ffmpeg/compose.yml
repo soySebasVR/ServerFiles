@@ -11,7 +11,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-    restart: unless-stopped
+    restart: always
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
       - /dev/dri/card1:/dev/dri/card1

@@ -1,0 +1,246 @@
+services:
+  jellyseerr:
+    image: ghcr.io/fallenbagel/jellyseerr:latest
+    init: true
+    container_name: jellyseerr
+    environment:
+      LOG_LEVEL: debug
+      TZ:
+      DB_TYPE: postgres # Which DB engine to use, either sqlite or postgres. The default is sqlite.
+      DB_HOST: "10.10.10.30" # (optional) The host (URL) of the database. The default is "localhost".
+      DB_PORT: "5432" # (optional) The port to connect to. The default is "5432".
+      DB_USER: ${JELLYSEERR_DB_USER} # (required) Username used to connect to the database.
+      DB_PASS: ${JELLYSEERR_DB_PASS} # (required) Password of the user used to connect to the database.
+      DB_NAME: "jellyseerr" # (optional) The name of the database to connect to. The default is "jellyseerr".
+      DB_LOG_QUERIES: "false" # (optional) Whether to log the DB queries for debugging. The default is "false".
+    ports:
+      - 5055:5055
+    volumes:
+      - ${VOL_CONFIG}/jellyseerr:/app/config
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1
+      start_period: 20s
+      timeout: 3s
+      interval: 15s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      servarrnetwork:
+        ipv4_address: 172.39.0.20
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      PUID: 1000
+      PGID: 100
+      TZ:
+    volumes:
+      - ${VOL_CONFIG}/radarr:/config
+      - ${VOL_MEDIA}:/data
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+    networks:
+      servarrnetwork:
+        ipv4_address: 172.39.0.10
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      PUID: 1000
+      PGID: 100
+      TZ:
+    volumes:
+      - ${VOL_CONFIG}/sonarr:/config
+      - ${VOL_MEDIA}:/data
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+    networks:
+      servarrnetwork:
+        ipv4_address: 172.39.0.11
+
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    environment:
+      PUID: 1000
+      PGID: 100
+      TZ:
+    volumes:
+      - ${VOL_CONFIG}/bazarr:/config
+      - ${VOL_MEDIA}:/data
+    ports:
+      - 6767:6767
+    restart: unless-stopped
+    networks:
+      servarrnetwork:
+        ipv4_address: 172.39.0.12
+
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    environment:
+      PUID: 1000
+      PGID: 100
+      TZ:
+    volumes:
+      - ${VOL_CONFIG}/lidarr:/config
+      - ${VOL_MEDIA}:/data
+    ports:
+      - 8686:8686
+    networks:
+      servarrnetwork:
+        ipv4_address: 172.39.0.13
+    restart: unless-stopped
+
+  mylar3:
+    image: lscr.io/linuxserver/mylar3:latest
+    container_name: mylar3
+    environment:
+      PUID: 1000
+      PGID: 100
+      TZ:
+    volumes:
+      - ${VOL_CONFIG}/lidarr:/config
+      - ${VOL_MEDIA}:/data
+    ports:
+      - 8090:8090
+    networks:
+      servarrnetwork:
+        ipv4_address: 172.39.0.14
+    restart: unless-stopped
+
+  bookshelf:
+    image: ghcr.io/pennydreadful/bookshelf:softcover
+    container_name: bookshelf
+    environment:
+      TZ:
+    volumes:
+      - ${VOL_CONFIG}/bookshelf:/config
+      - ${VOL_MEDIA}:/data
+    ports:
+      - 8787:8787
+    networks:
+      servarrnetwork:
+        ipv4_address: 172.39.0.15
+    restart: unless-stopped
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      PUID: 1000
+      PGID: 100
+      TZ:
+    volumes:
+      - ${VOL_CONFIG}/prowlarr:/config
+    restart: unless-stopped
+    depends_on:
+      gluetun:
+        condition: service_healthy
+        restart: true
+    network_mode: service:gluetun
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    restart: unless-stopped
+    environment:
+      PUID: 1000
+      PGID: 100
+      TZ:
+      WEBUI_PORT: 8081 # must match "qbittorrent web interface" port number in gluetun's service above
+    volumes:
+      - ${VOL_CONFIG}/qbittorrent:/config
+      - ${VOL_MEDIA}:/data
+    depends_on:
+      gluetun:
+        condition: service_healthy
+        restart: true
+    healthcheck:
+      test: ping -c 1 www.google.com || exit 1
+      interval: 60s
+      retries: 3
+      start_period: 20s
+      timeout: 10s
+    labels:
+      - deunhealth.restart.on.unhealthy=true
+    network_mode: service:gluetun
+
+  # nzbget:
+  #   image: lscr.io/linuxserver/nzbget:latest
+  #   container_name: nzbget
+  #   environment:
+  #     PUID: 1000
+  #     PGID: 100
+  #     TZ:
+  #   volumes:
+  #     - /etc/localtime:/etc/localtime:ro
+  #     - ${VOL_CONFIG}/nzbget:/config
+  #     - ${VOL_MEDIA}:/data
+  #   depends_on:
+  #     gluetun:
+  #       condition: service_healthy
+  #       restart: true
+  #   restart: unless-stopped
+  #   network_mode: service:gluetun
+
+  gluetun:
+    image: qmcgaw/gluetun
+    container_name: gluetun
+    environment:
+      PUID: 1000
+      PGID: 100
+      TZ:
+      SERVER_COUNTRIES: Peru,Argentina,Chile
+      VPN_SERVICE_PROVIDER: protonvpn
+      VPN_TYPE: wireguard
+      WIREGUARD_PRIVATE_KEY:
+      FREE_ONLY: "off"
+      HEALTH_VPN_DURATION_INITIAL: 120s
+      PORT_FORWARD_ONLY: "on"
+      VPN_PORT_FORWARDING: "on"
+      VPN_PORT_FORWARDING_UP_COMMAND: /bin/sh -c 'wget -O- --retry-connrefused --post-data "json={\"listen_port\":{{PORT}},\"current_network_interface\":\"{{VPN_INTERFACE}}\",\"random_port\":false,\"upnp\":false}" http://127.0.0.1:8081/api/v2/app/setPreferences 2>&1'
+      VPN_PORT_FORWARDING_DOWN_COMMAND: /bin/sh -c 'wget -O- --retry-connrefused --post-data "json={\"listen_port\":0,\"current_network_interface\":\"lo"}" http://127.0.0.1:8081/api/v2/app/setPreferences 2>&1'
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    networks:
+      servarrnetwork:
+        ipv4_address: 172.39.0.2
+    ports:
+      - 8081:8081 # qbittorrent web interface
+      - 6881:6881 # qbittorrent torrent port
+      - 6789:6789 # nzbget
+      - 9696:9696 # prowlarr
+    volumes:
+      - ${VOL_CONFIG}/gluetun:/gluetun
+    healthcheck:
+      test: ping -c 1 www.google.com || exit 1
+      interval: 20s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  deunhealth:
+    image: qmcgaw/deunhealth
+    container_name: deunhealth
+    network_mode: "none"
+    environment:
+      LOG_LEVEL: info
+      HEALTH_SERVER_ADDRESS: 127.0.0.1:9999
+      TZ:
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+networks:
+  servarrnetwork:
+    name: servarrnetwork
+    ipam:
+      config:
+        - subnet: 172.39.0.0/24

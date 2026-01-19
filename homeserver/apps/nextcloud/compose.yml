@@ -1,0 +1,51 @@
+services:
+  nextcloud:
+    image: nextcloud:32
+    container_name: nextcloud
+    restart: unless-stopped
+    networks:
+      - internet_access
+    ports:
+      - 8080:80
+    volumes:
+      - ${VOL_CONFIG}/nextcloud/data:/var/www/html
+      - ${VOL_TANK}/nextcloud/data/data:/var/www/html/data
+    environment:
+      POSTGRES_HOST: ${DATABASES_HOST}
+      POSTGRES_USER:
+      POSTGRES_PASSWORD:
+      POSTGRES_DB: nextcloud
+      REDIS_HOST: ${DATABASES_HOST}
+      NEXTCLOUD_TRUSTED_DOMAINS: nc.${DOMAIN},192.168.0.216
+      NEXTCLOUD_UPDATE: 1
+      NEXTCLOUD_INIT_HTACCESS: true
+  nextcloud-cron:
+    image: nextcloud:32
+    container_name: nextcloud-cron
+    restart: unless-stopped
+    volumes:
+      - ${VOL_CONFIG}/nextcloud/data:/var/www/html
+      - ${VOL_TANK}/nextcloud/data/data:/var/www/html/data
+    entrypoint: /cron.sh
+    depends_on:
+      - nextcloud
+
+  # collabora:
+  #   image: collabora/code
+  #   container_name: collabora
+  #   restart: unless-stopped
+  #   expose:
+  #     - 9980
+  #   environment:
+  #     extra_params: --o:ssl.enable=false  --o:ssl.termination=true
+  #     username: admin
+  #     password: ${COLLABORA_ADMIN_PASSWORD}
+  #     VIRTUAL_HOST: collabora.${DOMAIN}
+  #     VIRTUAL_PORT: 9980
+  #   networks:
+  #     - internet_access
+
+networks:
+  internet_access:
+    name: internet_access
+    external: true
