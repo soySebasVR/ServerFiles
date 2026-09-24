@@ -96,38 +96,6 @@ services:
         ipv4_address: 172.39.0.13
     restart: unless-stopped
 
-  mylar3:
-    image: lscr.io/linuxserver/mylar3:latest
-    container_name: mylar3
-    environment:
-      PUID: 1000
-      PGID: 100
-      TZ:
-    volumes:
-      - ${VOL_CONFIG}/lidarr:/config
-      - ${VOL_MEDIA}:/data
-    ports:
-      - 8090:8090
-    networks:
-      servarrnetwork:
-        ipv4_address: 172.39.0.14
-    restart: unless-stopped
-
-  bookshelf:
-    image: ghcr.io/pennydreadful/bookshelf:softcover
-    container_name: bookshelf
-    environment:
-      TZ:
-    volumes:
-      - ${VOL_CONFIG}/bookshelf:/config
-      - ${VOL_MEDIA}:/data
-    ports:
-      - 8787:8787
-    networks:
-      servarrnetwork:
-        ipv4_address: 172.39.0.15
-    restart: unless-stopped
-
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
@@ -169,24 +137,6 @@ services:
     labels:
       - deunhealth.restart.on.unhealthy=true
     network_mode: service:gluetun
-
-  # nzbget:
-  #   image: lscr.io/linuxserver/nzbget:latest
-  #   container_name: nzbget
-  #   environment:
-  #     PUID: 1000
-  #     PGID: 100
-  #     TZ:
-  #   volumes:
-  #     - /etc/localtime:/etc/localtime:ro
-  #     - ${VOL_CONFIG}/nzbget:/config
-  #     - ${VOL_MEDIA}:/data
-  #   depends_on:
-  #     gluetun:
-  #       condition: service_healthy
-  #       restart: true
-  #   restart: unless-stopped
-  #   network_mode: service:gluetun
 
   gluetun:
     image: qmcgaw/gluetun
