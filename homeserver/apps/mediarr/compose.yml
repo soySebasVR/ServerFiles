@@ -1,8 +1,8 @@
 services:
-  jellyseerr:
-    image: ghcr.io/fallenbagel/jellyseerr:latest
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
     init: true
-    container_name: jellyseerr
+    container_name: seerr
     environment:
       LOG_LEVEL: debug
       TZ:
@@ -145,7 +145,7 @@ services:
       PUID: 1000
       PGID: 100
       TZ:
-      SERVER_COUNTRIES: Peru,Argentina,Chile
+      # SERVER_COUNTRIES: Peru,Argentina,Chile
       VPN_SERVICE_PROVIDER: protonvpn
       VPN_TYPE: wireguard
       WIREGUARD_PRIVATE_KEY:
@@ -187,6 +187,40 @@ services:
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+
+  cleanuparr:
+    image: ghcr.io/cleanuparr/cleanuparr:latest
+    container_name: cleanuparr
+    environment:
+      PUID: 1000
+      PGID: 100
+      TZ:
+      PORT: 11011
+    volumes:
+      - ${VOL_CONFIG}/cleanuparr:/config
+      - ${VOL_MEDIA}:/data
+    ports:
+      - 11011:11011
+    restart: unless-stopped
+    networks:
+      servarrnetwork:
+        ipv4_address: 172.39.0.21
+
+  maintainerr:
+    image: ghcr.io/maintainerr/maintainerr:latest
+    container_name: maintainerr
+    user: "1000:100"
+    environment:
+      TZ:
+    volumes:
+      - ${VOL_CONFIG}/maintainerr:/opt/data
+      - ${VOL_MEDIA}:/data
+    ports:
+      - 6246:6246
+    restart: unless-stopped
+    networks:
+      servarrnetwork:
+        ipv4_address: 172.39.0.22
 
 networks:
   servarrnetwork:
