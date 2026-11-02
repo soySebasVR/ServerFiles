@@ -5,7 +5,7 @@ services:
     container_name: seerr
     environment:
       LOG_LEVEL: debug
-      TZ:
+      TZ: America/Lima
       DB_TYPE: postgres # Which DB engine to use, either sqlite or postgres. The default is sqlite.
       DB_HOST: "10.10.10.30" # (optional) The host (URL) of the database. The default is "localhost".
       DB_PORT: "5432" # (optional) The port to connect to. The default is "5432".
@@ -34,7 +34,7 @@ services:
     environment:
       PUID: 1000
       PGID: 100
-      TZ:
+      TZ: America/Lima
     volumes:
       - ${VOL_CONFIG}/radarr:/config
       - ${VOL_MEDIA}:/data
@@ -51,7 +51,7 @@ services:
     environment:
       PUID: 1000
       PGID: 100
-      TZ:
+      TZ: America/Lima
     volumes:
       - ${VOL_CONFIG}/sonarr:/config
       - ${VOL_MEDIA}:/data
@@ -68,7 +68,7 @@ services:
     environment:
       PUID: 1000
       PGID: 100
-      TZ:
+      TZ: America/Lima
     volumes:
       - ${VOL_CONFIG}/bazarr:/config
       - ${VOL_MEDIA}:/data
@@ -85,7 +85,7 @@ services:
     environment:
       PUID: 1000
       PGID: 100
-      TZ:
+      TZ: America/Lima
     volumes:
       - ${VOL_CONFIG}/lidarr:/config
       - ${VOL_MEDIA}:/data
@@ -102,7 +102,7 @@ services:
     environment:
       PUID: 1000
       PGID: 100
-      TZ:
+      TZ: America/Lima
     volumes:
       - ${VOL_CONFIG}/prowlarr:/config
     restart: unless-stopped
@@ -119,7 +119,7 @@ services:
     environment:
       PUID: 1000
       PGID: 100
-      TZ:
+      TZ: America/Lima
       WEBUI_PORT: 8081 # must match "qbittorrent web interface" port number in gluetun's service above
     volumes:
       - ${VOL_CONFIG}/qbittorrent:/config
@@ -144,8 +144,8 @@ services:
     environment:
       PUID: 1000
       PGID: 100
-      TZ:
-      # SERVER_COUNTRIES: Peru,Argentina,Chile
+      TZ: America/Lima
+      #SERVER_COUNTRIES: Peru,Argentina,Chile
       VPN_SERVICE_PROVIDER: protonvpn
       VPN_TYPE: wireguard
       WIREGUARD_PRIVATE_KEY:
@@ -154,7 +154,7 @@ services:
       PORT_FORWARD_ONLY: "on"
       VPN_PORT_FORWARDING: "on"
       VPN_PORT_FORWARDING_UP_COMMAND: /bin/sh -c 'wget -O- --retry-connrefused --post-data "json={\"listen_port\":{{PORT}},\"current_network_interface\":\"{{VPN_INTERFACE}}\",\"random_port\":false,\"upnp\":false}" http://127.0.0.1:8081/api/v2/app/setPreferences 2>&1'
-      VPN_PORT_FORWARDING_DOWN_COMMAND: /bin/sh -c 'wget -O- --retry-connrefused --post-data "json={\"listen_port\":0,\"current_network_interface\":\"lo"}" http://127.0.0.1:8081/api/v2/app/setPreferences 2>&1'
+      VPN_PORT_FORWARDING_DOWN_COMMAND: /bin/sh -c 'wget -O- --retry-connrefused --post-data "json={\"listen_port\":0,\"current_network_interface\":\"lo\"}" http://127.0.0.1:8081/api/v2/app/setPreferences 2>&1'
     cap_add:
       - NET_ADMIN
     devices:
@@ -183,7 +183,7 @@ services:
     environment:
       LOG_LEVEL: info
       HEALTH_SERVER_ADDRESS: 127.0.0.1:9999
-      TZ:
+      TZ: America/Lima
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -194,7 +194,7 @@ services:
     environment:
       PUID: 1000
       PGID: 100
-      TZ:
+      TZ: America/Lima
       PORT: 11011
     volumes:
       - ${VOL_CONFIG}/cleanuparr:/config
@@ -211,7 +211,7 @@ services:
     container_name: maintainerr
     user: "1000:100"
     environment:
-      TZ:
+      TZ: America/Lima
     volumes:
       - ${VOL_CONFIG}/maintainerr:/opt/data
       - ${VOL_MEDIA}:/data
@@ -221,6 +221,19 @@ services:
     networks:
       servarrnetwork:
         ipv4_address: 172.39.0.22
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      TZ: America/Lima
+      LOG_LEVEL: info
+    restart: unless-stopped
+    depends_on:
+      gluetun:
+        condition: service_healthy
+        restart: true
+    network_mode: service:gluetun
 
 networks:
   servarrnetwork:
