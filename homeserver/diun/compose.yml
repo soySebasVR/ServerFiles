@@ -1,0 +1,38 @@
+services:
+  diun:
+    image: crazymax/diun:4.33.1
+    container_name: diun
+    hostname: diun-${DIUN_HOST}
+    command: serve
+    restart: unless-stopped
+    volumes:
+      - diun_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      TZ: America/Lima
+      LOG_LEVEL: info
+      DIUN_WATCH_WORKERS: 5
+      DIUN_WATCH_SCHEDULE: "0 8 * * *"
+      DIUN_WATCH_JITTER: 5m
+      DIUN_WATCH_FIRSTCHECKNOTIF: "false"
+      DIUN_PROVIDERS_DOCKER: "true"
+      DIUN_PROVIDERS_DOCKER_WATCHBYDEFAULT: "true"
+      DIUN_PROVIDERS_DOCKER_WATCHSTOPPED: "false"
+      DIUN_NOTIF_NTFY_ENDPOINT: http://10.10.10.10:2586
+      DIUN_NOTIF_NTFY_TOPIC: homelab-updates
+      DIUN_NOTIF_NTFY_TOKEN: ${NTFY_TOKEN}
+      DIUN_NOTIF_NTFY_PRIORITY: 2
+    labels:
+      diun.watch_repo: "true"
+      diun.include_tags: '^\d+\.\d+\.\d+$$'
+      diun.sort_tags: semver
+      diun.max_tags: "10"
+    healthcheck:
+      test: ["CMD", "diun", "healthcheck"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  diun_data:
